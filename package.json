@@ -34,7 +34,7 @@
     "@multiformats/multiaddr-matcher": "^1.2.4",
     "dotenv": "^17.2.3",
     "fs": "^0.0.1-security",
-    "libp2p": "2.8.12",
+    "libp2p": "^2.8.12",
     "peer-id": "^0.16.0",
     "uint8arrays": "^5.1.0",
     "vercel": "^48.5.0",
