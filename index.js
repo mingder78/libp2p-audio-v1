@@ -1,13 +1,16 @@
 // @ts-check
 import { multiaddr } from "@multiformats/multiaddr";
 import { enable, disable } from "@libp2p/logger";
-import { PUBSUB_PEER_DISCOVERY, PUBSUB_AUDIO } from "./constants";
-import { update, getPeerTypes, getAddresses, getPeerDetails } from "./utils.js";
-import { createNewLibp2p } from "./utils.js";
-import { fromString, toString } from "uint8arrays";
+import { PUBSUB_AUDIO } from "./constants";
+import {
+  createNewLibp2p,
+  update,
+  getPeerTypes,
+  getAddresses,
+  getPeerDetails,
+} from "./utils.js";
 
 const App = async () => {
-
   const libp2p = await createNewLibp2p();
 
   let sourceBuffer;
@@ -17,7 +20,14 @@ const App = async () => {
   //  globalThis.libp2p = libp2p;
 
   function appendNextChunk() {
-    if (!isBufferReady || !sourceBuffer || isAppending || queue.length === 0 || sourceBuffer.updating) return;
+    if (
+      !isBufferReady ||
+      !sourceBuffer ||
+      isAppending ||
+      queue.length === 0 ||
+      sourceBuffer.updating
+    )
+      return;
     const chunk = queue.shift();
     if (!chunk) return;
 
@@ -31,7 +41,7 @@ const App = async () => {
     }
   }
 
-  console.log('start listening')
+  console.log("start listening");
 
   const audio = document.getElementById("player");
   const mediaSource = new MediaSource();
@@ -51,12 +61,11 @@ const App = async () => {
     isBufferReady = true;
   });
 
-
   await libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
   libp2p.services.pubsub.addEventListener("message", (evt) => {
     if (evt.detail.topic !== PUBSUB_AUDIO) return;
- //   console.log("Received audio chunk via pubsub", evt.detail);
- // tracking
+    //   console.log("Received audio chunk via pubsub", evt.detail);
+    // tracking
     const chunk = evt.detail.data; // Uint8Array
     if (!isBufferReady || !sourceBuffer) {
       queue.push(chunk);
@@ -68,25 +77,11 @@ const App = async () => {
   // node2 publishes "news" every second
   // working
   setInterval(() => {
-    const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO)
-      .map(peerId => {
-        const el = document.createElement('li')
-        el.textContent = peerId.toString()
-        return el
-      })
-
-    console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
-    //   libp2p.services.pubsub
-    //   .publish(PUBSUB_AUDIO, fromString("Bird bird bird, bird is the word!"))
-    //  .catch((err) => {
-    //    console.error(err);
-    //  });
-  }, 10000);
-
+    const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length;
+    console.log("🙋‍♀️🙋🙋🏻‍♂👷subscribers:", peerList);
+  }, 1000);
 
   libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
-  
-
 
   const DOM = {
     startstreaming: () => document.getElementById("startStream"),
@@ -111,8 +106,8 @@ const App = async () => {
   update(DOM.nodeStatus(), "Online");
   update(DOM.outputQuery(), "test");
 
-  libp2p.addEventListener("peer:connect", (event) => { });
-  libp2p.addEventListener("peer:disconnect", (event) => { });
+  libp2p.addEventListener("peer:connect", (event) => {});
+  libp2p.addEventListener("peer:disconnect", (event) => {});
 
   setInterval(() => {
     update(DOM.nodePeerCount(), libp2p.getConnections().length);
@@ -138,17 +133,6 @@ const App = async () => {
       }
     });
 
-    setInterval(() => {
-      const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO)
-        .map(peerId => {
-          const el = document.createElement('li')
-          el.textContent = peerId.toString()
-          return el
-        })
-
-      console.log('🙋‍♀️🙋🙋🏻‍♂👷subscribers:', peerList)
-    }, 1000);
-
     console.log("start streaming");
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream, {
@@ -157,7 +141,10 @@ const App = async () => {
     });
 
     recorder.ondataavailable = async (e) => {
-      if (e.data.size > 0 && libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
+      if (
+        e.data.size > 0 &&
+        libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2
+      ) {
         // Publish audio chunk to PUBSUB_AUDIO topic
         if (e.data.size === 0) return;
 
@@ -167,8 +154,8 @@ const App = async () => {
         if (libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
           try {
             await libp2p.services.pubsub.publish(PUBSUB_AUDIO, uint8);
-         //   console.log("Published audio chunk", uint8.byteLength);
-         // tracking
+            //   console.log("Published audio chunk", uint8.byteLength);
+            // tracking
           } catch (err) {
             console.error("Error publishing audio chunk:", err);
           }

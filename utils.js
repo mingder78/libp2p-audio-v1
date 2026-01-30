@@ -22,7 +22,6 @@ import {
 } from "./constants.js";
 import { bootstrap } from "@libp2p/bootstrap";
 import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
-import { bootstrapPeers } from "./constants.js";
 
 export async function getRawGistUrls(gistUrl) {
   const gistId = gistUrl.split("/").pop()?.split("#")[0];
@@ -96,9 +95,6 @@ export function getPeerDetails(libp2p) {
       let nodeType = [];
 
       // detect if this is a bootstrap node
-      if (bootstrapPeers.includes(peer.toString())) {
-        nodeType.push("bootstrap");
-      }
 
       const relayMultiaddrs = libp2p
         .getMultiaddrs()
