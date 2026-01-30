@@ -1,0 +1,43 @@
+{
+  "name": "libp2p-audio-stream",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "relay": "node relay.js",
+    "server": "node server3.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^14.1.1",
+    "@chainsafe/libp2p-noise": "^16.1.4",
+    "@chainsafe/libp2p-yamux": "^7.0.4",
+    "@headlessui/react": "^2.0.3",
+    "@libp2p/autonat": "^2.0.37",
+    "@libp2p/bootstrap": "^11.0.43",
+    "@libp2p/circuit-relay-v2": "^3.2.20",
+    "@libp2p/identify": "^3.0.37",
+    "@libp2p/interface-pubsub": "^4.0.1",
+    "@libp2p/logger": "^5.1.21",
+    "@libp2p/peer-id-factory": "^4.2.0",
+    "@libp2p/pubsub-peer-discovery": "^11.0.2",
+    "@libp2p/tcp": "^10.1.17",
+    "@libp2p/webrtc": "^5.2.20",
+    "@libp2p/websockets": "^9.2.17",
+    "@libp2p/webtransport": "^5.0.47",
+    "@multiformats/multiaddr": "^12.3.0",
+    "@multiformats/multiaddr-matcher": "^1.2.4",
+    "dotenv": "^17.2.3",
+    "fs": "^0.0.1-security",
+    "libp2p": "^3.1.3",
+    "peer-id": "^0.16.0",
+    "uint8arrays": "^5.1.0",
+    "vercel": "^48.5.0",
+    "ws": "^8.18.3"
+  }
+}
