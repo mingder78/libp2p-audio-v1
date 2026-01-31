@@ -94,7 +94,8 @@ const App = async () => {
     nodeAddressCount: () => document.getElementById("output-address-count"),
     nodeAddresses: () => document.getElementById("output-addresses"),
 
-    inputMultiaddr: () => document.getElementById("input-multiaddr"),
+    inputMultiaddr: () =>
+      document.getElementById("input-multiaddr") as HTMLInputElement | null,
     connectButton: () => document.getElementById("button-connect"),
     loggingButtonEnable: () => document.getElementById("button-logging-enable"),
     loggingButtonDisable: () =>
@@ -117,14 +118,18 @@ const App = async () => {
     update(DOM.nodePeerDetails(), getPeerDetails(libp2p));
   }, 1000);
 
-  /*
-  DOM.stopStreaming().onclick = async (e) => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const recorder = new MediaRecorder(stream, {
+    mimeType: "audio/webm;codecs=opus",
+    audioBitsPerSecond: 64000, // adjust quality (32k–128k typical)
+  });
+  DOM.stopstreaming()?.addEventListener("click", (e) => {
     recorder.stop();
     stream.getTracks().forEach((track) => track.stop()); // stop microphone
     console.log("🎙️ Recording stopped and stream closed");
-  };
-  */
-  DOM.startstreaming().onclick = async (e) => {
+    console.log("Streaming started 🎥");
+  });
+  DOM.startstreaming()?.addEventListener("click", (e) => {
     libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
     libp2p.services.pubsub.addEventListener("message", (evt) => {
       if (evt.detail.topic !== "browser-peer-discovery") {
@@ -132,59 +137,43 @@ const App = async () => {
         // evt.detail.data is a Uint8Array of the audio chunk
       }
     });
-
-    console.log("start streaming");
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm;codecs=opus",
-      audioBitsPerSecond: 64000, // adjust quality (32k–128k typical)
-    });
-
     recorder.ondataavailable = async (e) => {
       if (
         e.data.size > 0 &&
         libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2
       ) {
-        // Publish audio chunk to PUBSUB_AUDIO topic
-        if (e.data.size === 0) return;
-
-        const arrayBuffer = await e.data.arrayBuffer();
-        const uint8 = new Uint8Array(arrayBuffer);
-
-        if (libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length >= 2) {
-          try {
-            await libp2p.services.pubsub.publish(PUBSUB_AUDIO, uint8);
-            //   console.log("Published audio chunk", uint8.byteLength);
-            // tracking
-          } catch (err) {
-            console.error("Error publishing audio chunk:", err);
-          }
+        let arrayBuffer = await e.data.arrayBuffer();
+        let uint8 = new Uint8Array(arrayBuffer);
+        try {
+          await libp2p.services.pubsub.publish(PUBSUB_AUDIO, uint8);
+          //   console.log("Published audio chunk", uint8.byteLength);
+          // tracking
+        } catch (err) {
+          console.error("Error publishing audio chunk:", err);
         }
       }
     };
 
     recorder.start(250); // send small chunks every 250ms
     console.log("Streaming microphone via WebSocket...");
-  };
+  });
 
-  DOM.loggingButtonEnable().onclick = (e) => {
+  DOM.loggingButtonEnable()?.addEventListener("click", (e) => {
     enable("*,*:debug");
-  };
-  DOM.loggingButtonDisable().onclick = (e) => {
+  });
+  DOM.loggingButtonDisable()?.addEventListener("click", (e) => {
     disable();
-  };
-
-  DOM.connectButton().onclick = async (e) => {
+  });
+  DOM.connectButton()?.addEventListener("click", async (e) => {
     e.preventDefault();
-    let maddr = multiaddr(DOM.inputMultiaddr().value);
-
-    console.log(maddr);
+    const inputMultiaddr = DOM.inputMultiaddr()?.value ?? "";
+    let maddr = multiaddr(inputMultiaddr);
     try {
       await libp2p.dial(maddr);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
     }
-  };
+  });
 };
 
 App().catch((err) => {

@@ -7,6 +7,8 @@ import {
   WebRTCDirect,
 } from "@multiformats/multiaddr-matcher";
 import { createLibp2p } from "libp2p";
+import { bootstrap } from "@libp2p/bootstrap";
+import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
 import { identify } from "@libp2p/identify";
 import { noise } from "@chainsafe/libp2p-noise";
 import { yamux } from "@chainsafe/libp2p-yamux";
@@ -20,25 +22,6 @@ import {
   PUBSUB_AUDIO,
   RELAY_MULTIADDR,
 } from "./constants.js";
-import { bootstrap } from "@libp2p/bootstrap";
-import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
-
-export async function getRawGistUrls(gistUrl) {
-  const gistId = gistUrl.split("/").pop()?.split("#")[0];
-  if (!gistId) throw new Error("Invalid gist URL");
-
-  const apiUrl = `https://api.github.com/gists/${gistId}`;
-  const res = await fetch(apiUrl);
-  if (!res.ok) throw new Error(`Failed to fetch gist metadata: ${res.status}`);
-
-  const data = await res.json();
-  const files = Object.values(data.files);
-
-  return files.map((file) => ({
-    filename: file.filename,
-    raw_url: file.raw_url,
-  }));
-}
 
 export function getAddresses(libp2p) {
   return libp2p
@@ -58,7 +41,6 @@ export function getPeerTypes(libp2p) {
     WebTransport: 0,
     Other: 0,
   };
-
   libp2p
     .getConnections()
     .map((conn) => conn.remoteAddr)
@@ -81,7 +63,6 @@ export function getPeerTypes(libp2p) {
         console.info("wat", ma.toString());
       }
     });
-
   return Object.entries(types)
     .map(([name, count]) => `<li>${name}: ${count}</li>`)
     .join("");
@@ -129,7 +110,6 @@ export function update(element, newContent) {
     element.innerHTML = newContent;
   }
 }
-
 export async function createNewLibp2p() {
   const libp2p = await createLibp2p({
     addresses: {
@@ -217,34 +197,5 @@ export async function createNewLibp2p() {
       `Received message on ${topic}: ${new TextDecoder().decode(data)}`,
     );
   });
-  const peerList = libp2p.services.pubsub
-    .getSubscribers(PUBSUB_AUDIO)
-    .map((peerId) => {
-      const el = document.createElement("li");
-      el.textContent = peerId.toString();
-      return el;
-    });
-
-  console.log("🙋‍♀️🙋🙋🏻‍♂👷subscribers:", peerList);
-
   return libp2p;
-}
-
-export async function getRawGistFile(rawUrl) {
-  const rawUrlOK = await getRawGistUrls(rawUrl);
-  console.log(rawUrlOK);
-  const relayAddr = rawUrlOK[0].raw_url.trim();
-  console.log("Fetching raw Gist file from URL:", relayAddr);
-  try {
-    const response = await fetch(
-      `https://corsproxy.io/?${encodeURIComponent(relayAddr)}`,
-    );
-    if (!response.ok) {
-      throw new Error(`Fetch Error: ${response.status}`);
-    }
-    return await response.text();
-  } catch (error) {
-    console.error("Error:", error);
-    return null;
-  }
 }

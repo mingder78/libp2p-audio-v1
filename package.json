@@ -1,7 +1,7 @@
 {
   "name": "libp2p-audio-v1",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "relay": "node relay.js",
@@ -38,5 +38,8 @@
     "peer-id": "^0.16.0",
     "vercel": "^48.5.0",
     "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
