@@ -12,14 +12,54 @@ import {
 
 const App = async () => {
   const libp2p = await createNewLibp2p();
-
-  let sourceBuffer;
-  let queue = [];
+  let sourceBuffer: SourceBuffer | null = null;
+  let queue: Uint8Array<ArrayBuffer>[] = [];
   let isBufferReady = false;
   let isAppending = false;
-  //  globalThis.libp2p = libp2p;
 
-  function appendNextChunk() {
+  const audio = document.getElementById("player") as HTMLAudioElement | null;
+  if (!audio) {
+    throw new Error("No <audio> element found in the DOM");
+    // or return; console.error(...); etc.
+  }
+  const mediaSource = new MediaSource();
+  audio.src = URL.createObjectURL(mediaSource);
+
+  mediaSource.addEventListener("sourceopen", () => {
+    console.log("MediaSource opened");
+    const mime = 'audio/webm; codecs="opus"';
+    //'audio/mp4; codecs="mp4a.40.2"'; // ← change to your real mime!
+    // or 'audio/webm; codecs="opus"'
+    // or 'audio/mpeg' etc.
+    if (!MediaSource.isTypeSupported(mime)) {
+      console.error(`MIME not supported: ${mime}`);
+      mediaSource.endOfStream("decode");
+      return;
+    }
+    try {
+      sourceBuffer = mediaSource.addSourceBuffer(mime);
+    } catch (e) {
+      console.error("Failed to create SourceBuffer:", e);
+      return;
+    }
+
+    sourceBuffer.mode = "sequence";
+    sourceBuffer.addEventListener("updateend", onUpdateEnd);
+    isBufferReady = true;
+  });
+
+  function onUpdateEnd(): void {
+    isAppending = false;
+
+    // Optional: if ended → signal no more data (only if really finished)
+    // if (chunkQueue.length === 0 && /* no more coming */) {
+    //   mediaSource.endOfStream();
+    // }
+
+    // Try next chunk if any waiting
+    processQueue();
+  }
+  function processQueue(): void {
     if (
       !isBufferReady ||
       !sourceBuffer ||
@@ -28,7 +68,7 @@ const App = async () => {
       sourceBuffer.updating
     )
       return;
-    const chunk = queue.shift();
+    const chunk: Uint8Array<ArrayBuffer> = queue.shift()!;
     if (!chunk) return;
 
     try {
@@ -37,42 +77,26 @@ const App = async () => {
     } catch (e) {
       console.warn("appendBuffer failed:", e);
     } finally {
-      isAppending = false;
+      //isAppending = false; // don't do that
+      if (queue.length === 0) {
+        mediaSource.endOfStream(); // no argument = 'no error'
+      }
     }
   }
 
-  console.log("start listening");
-
-  const audio = document.getElementById("player");
-  const mediaSource = new MediaSource();
-  audio.src = URL.createObjectURL(mediaSource);
-
-  mediaSource.addEventListener("sourceopen", () => {
-    console.log("MediaSource opened");
-    try {
-      sourceBuffer = mediaSource.addSourceBuffer('audio/webm; codecs="opus"');
-    } catch (e) {
-      console.error("Failed to create SourceBuffer:", e);
-      return;
-    }
-
-    sourceBuffer.mode = "sequence";
-    sourceBuffer.addEventListener("updateend", appendNextChunk);
-    isBufferReady = true;
-  });
-
-  await libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
+  libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
   libp2p.services.pubsub.addEventListener("message", (evt) => {
     if (evt.detail.topic !== PUBSUB_AUDIO) return;
     //   console.log("Received audio chunk via pubsub", evt.detail);
     // tracking
-    const chunk = evt.detail.data; // Uint8Array
+    const chunk: Uint8Array<ArrayBuffer> = evt.detail
+      .data as Uint8Array<ArrayBuffer>; // Uint8Array
     if (!isBufferReady || !sourceBuffer) {
       queue.push(chunk);
       return;
     }
     queue.push(chunk);
-    appendNextChunk();
+    processQueue();
   });
   // node2 publishes "news" every second
   // working
