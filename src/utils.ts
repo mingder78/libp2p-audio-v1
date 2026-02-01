@@ -21,7 +21,7 @@ import {
   PUBSUB_PEER_DISCOVERY,
   PUBSUB_AUDIO,
   RELAY_MULTIADDR,
-} from "./constants";
+} from "@/constants";
 
 export function getAddresses(libp2p) {
   return libp2p
