@@ -1,7 +1,7 @@
 {
   "name": "libp2p-audio-v1",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "scripts": {
     "relay": "node relay.js",

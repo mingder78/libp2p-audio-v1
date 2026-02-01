@@ -1,14 +1,13 @@
 // @ts-check
 import { multiaddr } from "@multiformats/multiaddr";
-import { enable, disable } from "@libp2p/logger";
-import { PUBSUB_AUDIO } from "./constants";
+import { PUBSUB_AUDIO } from "@/constants";
 import {
   createNewLibp2p,
   update,
   getPeerTypes,
   getAddresses,
   getPeerDetails,
-} from "./utils.js";
+} from "@/utils";
 
 const App = async () => {
   const libp2p = await createNewLibp2p();
@@ -124,12 +123,10 @@ const App = async () => {
     loggingButtonEnable: () => document.getElementById("button-logging-enable"),
     loggingButtonDisable: () =>
       document.getElementById("button-logging-disable"),
-    outputQuery: () => document.getElementById("output"),
   };
 
   update(DOM.nodePeerId(), libp2p.peerId.toString());
   update(DOM.nodeStatus(), "Online");
-  update(DOM.outputQuery(), "test");
 
   libp2p.addEventListener("peer:connect", (event) => {});
   libp2p.addEventListener("peer:disconnect", (event) => {});
@@ -182,12 +179,6 @@ const App = async () => {
     console.log("Streaming microphone via WebSocket...");
   });
 
-  DOM.loggingButtonEnable()?.addEventListener("click", (e) => {
-    enable("*,*:debug");
-  });
-  DOM.loggingButtonDisable()?.addEventListener("click", (e) => {
-    disable();
-  });
   DOM.connectButton()?.addEventListener("click", async (e) => {
     e.preventDefault();
     const inputMultiaddr = DOM.inputMultiaddr()?.value ?? "";
