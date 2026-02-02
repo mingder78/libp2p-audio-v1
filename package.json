@@ -1,10 +1,10 @@
 {
   "name": "libp2p-audio-v1",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
-    "relay": "node ./src/relay.js",
+    "relay": 'DEBUG="libp2p:connection:*" node ./src/relay.js',
     "server": "node server3.js",
     "dev": "vite",
     "build": "vite build",

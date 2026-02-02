@@ -80,6 +80,7 @@ export function getPeerDetails(libp2p: Libp2p) {
       const relayMultiaddrs = libp2p
         .getMultiaddrs()
         .filter((ma) => Circuit.exactMatch(ma));
+
       const relayPeers = relayMultiaddrs.map((ma) => {
         return ma
           .getComponents()
@@ -88,8 +89,11 @@ export function getPeerDetails(libp2p: Libp2p) {
       });
 
       // detect if this is a relay we have a reservation on
-      if (relayPeers.includes(peer.toString())) {
-        nodeType.push("relay");
+      for (const rp of relayPeers) {
+        if (rp.includes(peer.toString())) {
+          nodeType.push(".. 📡 relay");
+          break;
+        }
       }
 
       return `<li>
