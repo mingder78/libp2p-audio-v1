@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": [
+      "es2015", // or es6, esnext, etc. — whatever you need
+      "dom", // ← this is the important one
+    ],
+    "jsx": "react-jsx",
+    "moduleResolution": "node16",
+    "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
-    // ... other options
-  }
+      "@/*": ["./src/*"],
+    },
+  },
 }

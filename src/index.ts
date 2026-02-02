@@ -1,13 +1,13 @@
 // @ts-check
 import { multiaddr } from "@multiformats/multiaddr";
-import { PUBSUB_AUDIO } from "@/constants";
+import { PUBSUB_AUDIO } from "@/constants.js";
 import {
   createNewLibp2p,
   update,
   getPeerTypes,
   getAddresses,
   getPeerDetails,
-} from "@/utils";
+} from "@/utils.js";
 
 const App = async () => {
   const libp2p = await createNewLibp2p();
@@ -131,9 +131,9 @@ const App = async () => {
   libp2p.addEventListener("peer:disconnect", (event) => {});
 
   setInterval(() => {
-    update(DOM.nodePeerCount(), libp2p.getConnections().length);
+    update(DOM.nodePeerCount(), libp2p.getConnections().length.toString());
     update(DOM.nodePeerTypes(), getPeerTypes(libp2p));
-    update(DOM.nodeAddressCount(), libp2p.getMultiaddrs().length);
+    update(DOM.nodeAddressCount(), libp2p.getMultiaddrs().length.toString());
     update(DOM.nodeAddresses(), getAddresses(libp2p));
     update(DOM.nodePeerDetails(), getPeerDetails(libp2p));
   }, 1000);

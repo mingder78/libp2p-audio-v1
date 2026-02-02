@@ -6,7 +6,13 @@ import {
   Circuit,
   WebRTCDirect,
 } from "@multiformats/multiaddr-matcher";
+import {
+  PUBSUB_PEER_DISCOVERY,
+  PUBSUB_AUDIO,
+  RELAY_MULTIADDR,
+} from "@/constants.js";
 import { createLibp2p } from "libp2p";
+import { PeerId, Libp2p } from "@libp2p/interface";
 import { bootstrap } from "@libp2p/bootstrap";
 import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
 import { identify } from "@libp2p/identify";
@@ -17,13 +23,8 @@ import { webSockets } from "@libp2p/websockets";
 import { webTransport } from "@libp2p/webtransport";
 import { webRTC } from "@libp2p/webrtc";
 import { pubsubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
-import {
-  PUBSUB_PEER_DISCOVERY,
-  PUBSUB_AUDIO,
-  RELAY_MULTIADDR,
-} from "@/constants";
 
-export function getAddresses(libp2p) {
+export function getAddresses(libp2p: Libp2p) {
   return libp2p
     .getMultiaddrs()
     .map((ma) => {
@@ -31,7 +32,7 @@ export function getAddresses(libp2p) {
     })
     .join("");
 }
-export function getPeerTypes(libp2p) {
+export function getPeerTypes(libp2p: Libp2p) {
   const types = {
     "Circuit Relay": 0,
     WebRTC: 0,
@@ -46,7 +47,6 @@ export function getPeerTypes(libp2p) {
     .map((conn) => conn.remoteAddr)
     .forEach((ma) => {
       if (WebRTC.exactMatch(ma)) {
-        //   console.log(ma);
         types["WebRTC"]++;
       } else if (WebRTCDirect.exactMatch(ma)) {
         types["WebRTC Direct"]++;
@@ -67,10 +67,10 @@ export function getPeerTypes(libp2p) {
     .map(([name, count]) => `<li>${name}: ${count}</li>`)
     .join("");
 }
-export function getPeerDetails(libp2p) {
+export function getPeerDetails(libp2p: Libp2p) {
   return libp2p
     .getPeers()
-    .map((peer) => {
+    .map((peer: PeerId) => {
       const peerConnections = libp2p.getConnections(peer);
 
       let nodeType = [];
@@ -105,8 +105,8 @@ export function getPeerDetails(libp2p) {
     })
     .join("");
 }
-export function update(element, newContent) {
-  if (element.innerHTML !== newContent) {
+export function update(element: HTMLElement | null, newContent: string) {
+  if (element && element.innerHTML !== newContent && newContent !== null) {
     element.innerHTML = newContent;
   }
 }
@@ -164,7 +164,7 @@ export async function createNewLibp2p() {
     },
   });
 
-  await libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
+  libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
 
   // 👇 Dial peers discovered via pubsub
   libp2p.addEventListener("peer:discovery", async (evt) => {
