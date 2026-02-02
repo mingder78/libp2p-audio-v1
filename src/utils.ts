@@ -140,9 +140,7 @@ export async function createNewLibp2p() {
       }),
       // 👇 Required to create circuit relay reservations in order to hole punch browser-to-browser WebRTC connections
       // 添加@libp2p/circuit-relay-v2-transport支持
-      circuitRelayTransport({
-        discoverRelays: 1,
-      }),
+      circuitRelayTransport({}),
     ],
     connectionEncrypters: [noise()],
     streamMuxers: [yamux()],
@@ -161,9 +159,7 @@ export async function createNewLibp2p() {
       }),
     ],
     services: {
-      pubsub: gossipsub({
-        allowPublishToZeroPeers: true, // Example option
-      }),
+      pubsub: gossipsub({}),
       identify: identify(),
     },
   });

@@ -12,7 +12,7 @@ import {
 const App = async () => {
   const libp2p = await createNewLibp2p();
   let sourceBuffer: SourceBuffer | null = null;
-  let queue: Uint8Array<ArrayBuffer>[] = [];
+  let queue: BufferSource[] = [];
   let isBufferReady = false;
   let isAppending = false;
 
@@ -67,7 +67,7 @@ const App = async () => {
       sourceBuffer.updating
     )
       return;
-    const chunk: Uint8Array<ArrayBuffer> = queue.shift()!;
+    const chunk: BufferSource = queue.shift()!;
     if (!chunk) return;
 
     try {
@@ -88,8 +88,7 @@ const App = async () => {
     if (evt.detail.topic !== PUBSUB_AUDIO) return;
     //   console.log("Received audio chunk via pubsub", evt.detail);
     // tracking
-    const chunk: Uint8Array<ArrayBuffer> = evt.detail
-      .data as Uint8Array<ArrayBuffer>; // Uint8Array
+    const chunk: BufferSource = evt.detail.data as BufferSource; // Uint8Array -> BufferSource
     if (!isBufferReady || !sourceBuffer) {
       queue.push(chunk);
       return;
