@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <script type="module">
+            import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+            const width = 900;
+            const height = 600;
+
+            const svg = d3
+                .select("body")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const graph = {
+                nodes: [],
+                links: [],
+            };
+
+            const simulation = d3
+                .forceSimulation(graph.nodes)
+                .force(
+                    "link",
+                    d3
+                        .forceLink(graph.links)
+                        .id((d) => d.id)
+                        .distance(120),
+                )
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            let link = svg.append("g").selectAll("line");
+            let node = svg.append("g").selectAll("circle");
+
+            function update() {
+                link = link
+                    .data(graph.links)
+                    .join("line")
+                    .attr("stroke", "#999");
+
+                node = node
+                    .data(graph.nodes)
+                    .join("circle")
+                    .attr("r", 10)
+                    .attr("fill", "#3b82f6")
+                    .call(drag(simulation));
+
+                node.append("title").text((d) => d.id);
+
+                simulation.nodes(graph.nodes);
+                simulation.force("link").links(graph.links);
+
+                simulation.on("tick", () => {
+                    link.attr("x1", (d) => d.source.x)
+                        .attr("y1", (d) => d.source.y)
+                        .attr("x2", (d) => d.target.x)
+                        .attr("y2", (d) => d.target.y);
+
+                    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+                });
+
+                simulation.alpha(1).restart();
+            }
+
+            function drag(sim) {
+                return d3
+                    .drag()
+                    .on("start", (event, d) => {
+                        if (!event.active) sim.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                    })
+                    .on("drag", (event, d) => {
+                        d.fx = event.x;
+                        d.fy = event.y;
+                    })
+                    .on("end", (event, d) => {
+                        if (!event.active) sim.alphaTarget(0);
+                        d.fx = null;
+                        d.fy = null;
+                    });
+            }
+
+            // demo data
+            function addPeer(id) {
+                if (!graph.nodes.find((n) => n.id === id)) {
+                    graph.nodes.push({ id });
+                }
+            }
+
+            function connect(a, b) {
+                graph.links.push({ source: a, target: b });
+            }
+
+            addPeer("A");
+            addPeer("B");
+            addPeer("C");
+            addPeer("C1");
+            addPeer("C2");
+            addPeer("C3");
+            addPeer("C4");
+            connect("A", "B");
+            connect("B", "C");
+            connect("B", "C1");
+            connect("B", "C2");
+
+            update();
+        </script>
+    </head>
+    <body></body>
+</html>
