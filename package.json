@@ -4,7 +4,7 @@
   "version": "0.1.1",
   "type": "module",
   "scripts": {
-    "relay": 'DEBUG="libp2p:connection:*" node ./src/relay.js',
+    "relay": "DEBUG=\"libp2p:connection:*\" node ./src/relay.js",
     "server": "node server3.js",
     "dev": "vite",
     "build": "vite build",
@@ -25,6 +25,7 @@
     "@libp2p/interface-pubsub": "^4.0.1",
     "@libp2p/logger": "^5.1.21",
     "@libp2p/peer-id-factory": "^4.2.0",
+    "@libp2p/ping": "^3.0.10",
     "@libp2p/pubsub-peer-discovery": "^11.0.2",
     "@libp2p/tcp": "^10.1.17",
     "@libp2p/webrtc": "^5.2.20",
