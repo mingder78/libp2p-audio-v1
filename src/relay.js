@@ -2,7 +2,6 @@
 import { createLibp2p } from "libp2p";
 import { autoNAT } from "@libp2p/autonat";
 import { identify } from "@libp2p/identify";
-import { ping } from "@libp2p/ping";
 import { noise } from "@chainsafe/libp2p-noise";
 import { yamux } from "@chainsafe/libp2p-yamux";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
@@ -35,7 +34,6 @@ async function main() {
       autoNat: autoNAT(),
       relay: circuitRelayServer(),
       pubsub: gossipsub({}),
-      ping: ping(),
     },
   });
 

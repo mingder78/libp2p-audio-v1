@@ -16,7 +16,6 @@ import { PeerId, Libp2p } from "@libp2p/interface";
 import { bootstrap } from "@libp2p/bootstrap";
 import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
 import { identify } from "@libp2p/identify";
-import { ping } from "@libp2p/ping";
 import { noise } from "@chainsafe/libp2p-noise";
 import { yamux } from "@chainsafe/libp2p-yamux";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
@@ -166,7 +165,6 @@ export async function createNewLibp2p() {
     services: {
       pubsub: gossipsub({}),
       identify: identify(),
-      ping: ping(),
     },
   });
 
