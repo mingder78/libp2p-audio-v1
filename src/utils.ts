@@ -182,20 +182,14 @@ export async function createNewLibp2p() {
       maddrs.map((ma) => ma.toString()),
     );
     try {
-      await libp2p.dial(maddrs); // dial the new peer
+      const conn = await libp2p.dial(maddrs); // dial the new peer
+
+      console.log("Connected:", conn.remotePeer.toString());
+      // open protocol
+      const stream = await conn.newStream("/my-proto/1.0.0");
     } catch (err) {
       console.error(`Failed to dial peer (${evt.detail.id.toString()}):`, err);
     }
-  });
-
-  // ... further usage of the PubSub API
-  libp2p.services.pubsub.subscribe("my-topic");
-  libp2p.services.pubsub.addEventListener("message", (evt) => {
-    const { topic, data } = evt.detail;
-    if (topic !== "my-topic") return; // 👈 ignore other topics
-    console.log(
-      `Received message on ${topic}: ${new TextDecoder().decode(data)}`,
-    );
   });
   return libp2p;
 }

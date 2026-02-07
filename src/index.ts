@@ -1,6 +1,6 @@
 // @ts-check
 import { multiaddr } from "@multiformats/multiaddr";
-import { PUBSUB_AUDIO } from "@/constants.js";
+import { PUBSUB_AUDIO, MIMETYPE } from "@/constants.js";
 import {
   createNewLibp2p,
   update,
@@ -26,7 +26,7 @@ const App = async () => {
 
   mediaSource.addEventListener("sourceopen", () => {
     console.log("MediaSource opened");
-    const mime = 'audio/webm; codecs="opus"';
+    const mime = MIMETYPE;
     //'audio/mp4; codecs="mp4a.40.2"'; // ← change to your real mime!
     // or 'audio/webm; codecs="opus"'
     // or 'audio/mpeg' etc.
@@ -83,7 +83,6 @@ const App = async () => {
     }
   }
 
-  libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
   libp2p.services.pubsub.addEventListener("message", (evt) => {
     if (evt.detail.topic !== PUBSUB_AUDIO) return;
     //   console.log("Received audio chunk via pubsub", evt.detail);
@@ -102,8 +101,6 @@ const App = async () => {
     const peerList = libp2p.services.pubsub.getSubscribers(PUBSUB_AUDIO).length;
     console.log("🙋‍♀️🙋🙋🏻‍♂👷subscribers:", peerList);
   }, 1000);
-
-  libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
 
   const DOM = {
     startstreaming: () => document.getElementById("startStream"),
@@ -140,17 +137,18 @@ const App = async () => {
 
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const recorder = new MediaRecorder(stream, {
-    mimeType: "audio/webm;codecs=opus",
+    mimeType: MIMETYPE,
     audioBitsPerSecond: 64000, // adjust quality (32k–128k typical)
   });
+
   DOM.stopstreaming()?.addEventListener("click", (e) => {
     recorder.stop();
     stream.getTracks().forEach((track) => track.stop()); // stop microphone
     console.log("🎙️ Recording stopped and stream closed");
     console.log("Streaming started 🎥");
   });
+
   DOM.startstreaming()?.addEventListener("click", (e) => {
-    libp2p.services.pubsub.subscribe(PUBSUB_AUDIO);
     libp2p.services.pubsub.addEventListener("message", (evt) => {
       if (evt.detail.topic !== "browser-peer-discovery") {
         console.log("sender  audio chunk to", evt.detail);
